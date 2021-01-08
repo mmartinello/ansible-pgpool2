@@ -1,2 +1,5 @@
 ---
-# handlers file for mmartinello.pgpool2
+- name: Restart Pgpool-II
+  service:
+    name: pgpool
+    state: restarted

@@ -1,2 +1,61 @@
 ---
-# defaults file for mmartinello.pgpool2
+# Pgpool-II version to install
+pgpool2_version: 4.2
+
+# PostgreSQL version
+pgpool2_postgresql_version: 12
+
+# Pgpool-II Release RPM URL (needs to be for the correct CentOS version!)
+pgpool2_release_rpm_url: https://www.pgpool.net/yum/rpms/4.2/redhat/rhel-8-x86_64/pgpool-II-release-4.2-1.noarch.rpm
+
+# Pgpool-II Yum package name (needs to be for the correct PostgreSQL version!)
+pgpool2_yum_package_name: pgpool-II-pg{{ pgpool2_postgresql_version }}
+
+###############################################################################
+# Pgpool-II configurations (pgpool2_[pgpool2.conf variable name])
+#
+
+# Backend clustering mode
+pgpool2_backend_clustering_mode: streaming_replication
+
+# pgpool Connection Settings
+pgpool2_listen_address: localhost
+pgpool2_listen_address: 9999
+pgpool2_socket_dir: /tmp
+pgpool2_reserved_connections: 0
+pgpool2_pcp_listen_addresses: *
+
+# pgpool Communication Manager Connection Settings
+pgpool2_pcp_port: 9898
+pgpool2_pcp_socket_dir: /tmp
+pgpool2_listen_backlog_multiplier: 2
+pgpool2_serialize_accept: off
+
+# Backend Connection Settings
+pgpool2_backends:
+  0:
+    - hostname: localhost
+    - port: 5432
+    - weight: 1
+    - data_directory: /var/lib/postgresql/12/main
+    - flag: ALLOW_TO_FAILOVER
+    - application_name: localhost
+
+# Authentication
+pgpool2_enable_pool_hba: off
+pgpool2_pool_passwd: pool_passwd
+pgpool2_authentication_timeout: 1min
+pgpool2_allow_clear_text_frontend_auth: off
+
+# SSL Connections
+pgpool2_ssl: off
+#pgpool2_ssl_key: server.key
+#pgpool2_ssl_cert: server.cert
+#pgpool2_ssl_ca_cert:
+#pgpool2_ssl_ca_cert_dir:
+#pgpool2_ssl_crl_file:
+pgpool2_ssl_ciphers: HIGH:MEDIUM:+3DES:!aNULL
+ssl_prefer_server_ciphers: off
+pgpool2_ssl_ecdh_curve: prime256v1
+pgpool2_ssl_dh_params_file:
+#pgpool2_ssl_passphrase_command:

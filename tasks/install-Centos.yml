@@ -1,0 +1,17 @@
+---
+# FIXME: this is disabled because it ends with error 'Failed to validate GPG signature for [package]'
+#- name: Install Pgpool-II RPM
+#  yum:
+#    pkg: "{{ pgpool2_release_rpm_url }}"
+#    state: present
+
+# FIXME: fallback for previous fixme
+- name: Install Icinga2 EPEL Repository
+  command: "yum -y install {{ pgpool2_release_rpm_url }}"
+  args:
+    warn: false
+
+- name: Install Pgpool-II
+  yum:
+    name: "{{ pgpool2_yum_package_name }}"
+    state: present

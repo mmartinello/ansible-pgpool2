@@ -1,2 +1,8 @@
 ---
-# tasks file for mmartinello.pgpool2
+- import_tasks: install.yml
+  tags:
+    - install
+
+- import_tasks: configure.yml
+  tags:
+    - configure
