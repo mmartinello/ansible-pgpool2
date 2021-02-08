@@ -3,8 +3,3 @@
 
 - include_tasks: install-Centos.yml
   when: ansible_os_family in ['CentOS', 'RedHat']
-
-- name: Fail if ditro not supported
-  fail:
-    msg: "Distro '{{ ansible_os_family }}' not supported, exiting now!"
-  when: ansible_os_family not in ['CentOS', 'RedHat']

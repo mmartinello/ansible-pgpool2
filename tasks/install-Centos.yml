@@ -6,7 +6,7 @@
 #    state: present
 
 # FIXME: fallback for previous fixme
-- name: Install Icinga2 EPEL Repository
+- name: Install Pgpool-II Repository
   command: "yum -y install {{ pgpool2_release_rpm_url }}"
   args:
     warn: false

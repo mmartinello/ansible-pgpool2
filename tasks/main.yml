@@ -1,4 +1,11 @@
 ---
+- name: Fail if distro not supported
+  fail:
+    msg: "Distro '{{ ansible_os_family }}' not supported, exiting now!"
+  when: ansible_os_family not in ['CentOS', 'RedHat']
+
+- import_tasks: vars.yml
+
 - import_tasks: install.yml
   tags:
     - install

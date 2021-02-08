@@ -11,25 +11,9 @@ pgpool2_release_rpm_url: https://www.pgpool.net/yum/rpms/4.2/redhat/rhel-8-x86_6
 # Pgpool-II Yum package name (needs to be for the correct PostgreSQL version!)
 pgpool2_yum_package_name: pgpool-II-pg{{ pgpool2_postgresql_version }}
 
-###############################################################################
-# Pgpool-II configurations (pgpool2_[pgpool2.conf variable name])
-#
-
-# Backend clustering mode
-pgpool2_backend_clustering_mode: streaming_replication
-
-# pgpool Connection Settings
-pgpool2_listen_address: localhost
-pgpool2_listen_address: 9999
-pgpool2_socket_dir: /tmp
-pgpool2_reserved_connections: 0
-pgpool2_pcp_listen_addresses: *
-
-# pgpool Communication Manager Connection Settings
-pgpool2_pcp_port: 9898
-pgpool2_pcp_socket_dir: /tmp
-pgpool2_listen_backlog_multiplier: 2
-pgpool2_serialize_accept: off
+# PCP Authentication Configuration
+pgpool2_pcp_username: postgres
+pgpool2_pcp_password: postgres
 
 # Backend Connection Settings
 pgpool2_backends:
@@ -40,6 +24,51 @@ pgpool2_backends:
     - data_directory: /var/lib/postgresql/12/main
     - flag: ALLOW_TO_FAILOVER
     - application_name: localhost
+pgpool2_node_list:
+  0:
+    - hostname: localhost
+    - wd_port: 9000
+    - pgpool_port: 5432
+    - heartbeat_port: 9694
+    - heartbeat_device: ''
+
+# Failover and failback configuration
+pgpool2_failover_enabled: false
+pgpool2_failover_command_source: pgpool-failover.sh
+pgpool2_failback_enabled: false
+pgpool2_failback_command_source: pgpool-failback.sh
+
+# Watchdog
+pgpool2_use_watchdog: off
+pgpool2_delegate_ip: ''
+pgpool2_trusted_servers: "{{ ansible_default_ipv4.gateway }}"
+pgpool2_delegate_ip_interface: "{{ ansible_default_ipv4.interface }}"
+
+# In memory query cache
+pgpool2_memory_cache_enabled: off
+pgpool2_memqcache_method: shmem # (shmem|memcached)
+pgpool2_memqcache_memcached_host: localhost
+pgpool2_memqcache_memcached_port: 11211
+
+###############################################################################
+# Pgpool-II configurations (pgpool2_[pgpool2.conf variable name])
+#
+
+# Backend clustering mode
+pgpool2_backend_clustering_mode: streaming_replication
+
+# pgpool Connection Settings
+pgpool2_listen_address: localhost
+pgpool2_listen_port: 9999
+pgpool2_socket_dir: /tmp
+pgpool2_reserved_connections: 0
+pgpool2_pcp_listen_addresses: '*'
+
+# pgpool Communication Manager Connection Settings
+pgpool2_pcp_port: 9898
+pgpool2_pcp_socket_dir: /tmp
+pgpool2_listen_backlog_multiplier: 2
+pgpool2_serialize_accept: off
 
 # Authentication
 pgpool2_enable_pool_hba: off
@@ -59,3 +88,153 @@ ssl_prefer_server_ciphers: off
 pgpool2_ssl_ecdh_curve: prime256v1
 pgpool2_ssl_dh_params_file:
 #pgpool2_ssl_passphrase_command:
+
+# Pools
+pgpool2_num_init_children: 32
+pgpool2_max_pool: 2
+pgpool2_child_life_time: 5min
+pgpool2_child_max_connections: 0
+pgpool2_connection_life_time: 0
+pgpool2_client_idle_limit: 0
+
+# Logs
+pgpool2_log_destination: stderr
+pgpool2_log_line_prefix: '%t: pid %p: '
+pgpool2_log_connections: off
+pgpool2_log_disconnections: off
+pgpool2_log_hostname: off
+pgpool2_log_statement: off
+pgpool2_log_per_node_statement: off
+pgpool2_log_client_messages: off
+pgpool2_log_standby_delay: if_over_threshold
+pgpool2_syslog_facility: LOCAL0
+pgpool2_syslog_ident: pgpool
+#pgpool2_log_error_verbosity: default
+#pgpool2_client_min_messages: notice
+#pgpool2_log_min_messages: warning
+#pgpool2_logging_collector: off
+#pgpool2_log_directory: '/tmp/pgpool_log'
+#pgpool2_log_filename: 'pgpool-%Y-%m-%d_%H%M%S.log'
+#pgpool2_log_file_mode: 0600
+#pgpool2_log_truncate_on_rotation: off
+#pgpool2_log_rotation_age: 1d
+#pgpool2_log_rotation_size: 10MB
+
+# File Locations
+
+
+# Connection Pooling
+pgpool2_connection_cache: on
+pgpool2_reset_query_list: ABORT; DISCARD ALL
+
+# Replication Mode
+pgpool2_replicate_select: off
+pgpool2_insert_lock: off
+pgpool2_lobj_lock_table: ''
+replication_stop_on_mismatch: off
+failover_if_affected_tuples_mismatch: off
+
+# Load Balancing Mode
+pgpool2_load_balance_mode: off
+pgpool2_ignore_leading_white_space: on
+pgpool2_read_only_function_list: ''
+pgpool2_write_function_list: ''
+pgpool2_primary_routing_query_pattern_list: ''
+pgpool2_database_redirect_preference_list: ''
+pgpool2_app_name_redirect_preference_list: ''
+pgpool2_allow_sql_comments: off
+pgpool2_disable_load_balance_on_write: 'transaction'
+pgpool2_dml_adaptive_object_relationship_list: ''
+pgpool2_statement_level_load_balance: off
+
+# Native Replication Mode
+pgpool2_sr_check_period: 0
+pgpool2_sr_check_user: 'nobody'
+pgpool2_sr_check_password: ''
+pgpool2_sr_check_database: postgres
+pgpool2_delay_threshold: 0
+
+# Health Check Global Parameters
+pgpool2_health_check_period: 0
+pgpool2_health_check_timeout: 10
+health_check_user: nobody
+pgpool2_health_check_password: ''
+pgpool2_health_check_database: ''
+health_check_max_retries: 0
+pgpool2_health_check_retry_delay: 1
+pgpool2_connect_timeout: 10000
+
+# Health Check per Node Parameters (optional)
+
+
+# Failover and Failback
+pgpool2_failover_command_path: /usr/local/bin/pgpool-failover.sh
+pgpool2_failover_command: '{{ pgpool2_failover_command_path }} %d %h %P %m %H %R'
+pgpool2_failback_command_path: /usr/local/bin/pgpool-failback.sh
+pgpool2_failback_command: '{{ pgpool2_failback_command_path }} %d %h %p %D %m %H %M %P'
+pgpool2_failover_on_backend_error: on
+pgpool2_detach_false_primary: off
+pgpool2_search_primary_node_timeout: 5min
+
+# Online Recovery
+pgpool2_recovery_user: nobody
+pgpool2_recovery_password: ''
+pgpool2_recovery_1st_stage_command: ''
+pgpool2_recovery_2nd_stage_command: ''
+pgpool2_recovery_timeout: 90
+pgpool2_client_idle_limit_in_recovery: 0
+pgpool2_auto_failback: off
+pgpool2_auto_failback_interval: 1min
+
+# Watchdog
+pgpool2_ping_path: /usr/bin
+pgpool2_wd_priority: 1
+pgpool2_wd_authkey: ''
+pgpool2_wd_ipc_socket_dir: /var/run/postgresql
+pgpool2_if_cmd_path: /sbin
+pgpool2_if_up_cmd: '/usr/bin/sudo /sbin/ip addr add $_IP_$/24 dev {{ pgpool2_delegate_ip_interface }} label {{ pgpool2_delegate_ip_interface }}:0'
+pgpool2_if_down_cmd: '/usr/bin/sudo /sbin/ip addr del $_IP_$/24 dev {{ pgpool2_delegate_ip_interface }}'
+pgpool2_arping_path: /usr/sbin
+pgpool2_arping_cmd: '/usr/bin/sudo /usr/sbin/arping -U $_IP_$ -w 1 -I {{ pgpool2_delegate_ip_interface }}'
+pgpool2_clear_memqcache_on_escalation: on
+pgpool2_wd_escalation_command: ''
+pgpool2_wd_de_escalation_command: ''
+pgpool2_failover_when_quorum_exists: on
+pgpool2_failover_require_consensus: on
+pgpool2_allow_multiple_failover_requests_from_node: off
+pgpool2_enable_consensus_with_half_votes: off
+pgpool2_wd_monitoring_interfaces_list: ''
+pgpool2_wd_lifecheck_method: heartbeat
+pgpool2_wd_interval: 10
+pgpool2_wd_heartbeat_keepalive: 2
+pgpool2_wd_heartbeat_deadtime: 30
+pgpool2_wd_life_point: 3
+pgpool2_wd_lifecheck_query: SELECT 1
+pgpool2_wd_lifecheck_dbname: template1
+pgpool2_wd_lifecheck_user: nobody
+pgpool2_wd_lifecheck_password: ''
+
+# Others
+pgpool2_relcache_expire: 0
+pgpool2_relcache_size: 256
+pgpool2_check_temp_table: catalog
+pgpool2_check_unlogged_table: on
+pgpool2_enable_shared_relcache: on
+pgpool2_relcache_query_target: primary
+
+# In memory query memory cache
+pgpool2_memqcache_total_size: 64MB
+pgpool2_memqcache_max_num_cache: 1000000
+pgpool2_memqcache_expire: 0
+pgpool2_memqcache_auto_cache_invalidation: on
+pgpool2_memqcache_maxcache: 400kB
+pgpool2_memqcache_cache_block_size: 1MB
+pgpool2_memqcache_oiddir: /var/log/pgpool/oiddir
+pgpool2_cache_safe_memqcache_table_list: ''
+pgpool2_cache_unsafe_memqcache_table_list: ''
+
+# Builtin variables
+pgpool2_etc_dir: /etc/pgpool-II
+pgpool2_node_id: 0
+pgpool2_pool_hba_entries: []
+pgpool2_pool_passwd_entries: []

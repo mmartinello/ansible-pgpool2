@@ -1,0 +1,4 @@
+---
+- name: Set Pgpool-II configuration directory path
+  set_fact:
+    pgpool2_etc_dir: /etc/pgpool-II
