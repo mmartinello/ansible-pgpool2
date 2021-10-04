@@ -1,15 +1,29 @@
 ---
+# Fail if distro is not supported (currenyly only CentOS)
 - name: Fail if distro not supported
   fail:
     msg: "Distro '{{ ansible_os_family }}' not supported, exiting now!"
   when: ansible_os_family not in ['CentOS', 'RedHat']
 
+# Setup variables
 - import_tasks: vars.yml
 
+# Install Pgpool-II
 - import_tasks: install.yml
   tags:
     - install
 
+# Configure Pgpool-II
 - import_tasks: configure.yml
   tags:
     - configure
+
+# Copy command files
+- import_tasks: commands.yml
+  tags:
+    - commands
+
+# Finalize (SSH keys, sudoers, etc.)
+- import_tasks: finalize.yml
+  tags:
+    - finalize

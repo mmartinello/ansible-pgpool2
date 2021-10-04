@@ -1,0 +1,120 @@
+---
+- name: Create 'postgres' user home directory
+  file:
+    path: /var/lib/pgsql
+    state: directory
+    mode: 0700
+    owner: postgres
+    group: postgres
+
+- name: Create .ssh directory for 'postgres' user
+  file:
+    path: /var/lib/pgsql/.ssh
+    state: directory
+    mode: 0700
+    owner: postgres
+    group: postgres    
+
+- name: Create SSH keys for 'postgres' user
+  openssh_keypair:
+    path: /var/lib/pgsql/.ssh/id_rsa
+    state: present
+    owner: postgres
+    group: postgres
+  register: postgres_ssh_key
+
+- name: Copy 'postgres' public SSH key on every PgPool-II node
+  authorized_key:
+    user: postgres
+    key: "{{ postgres_ssh_key.public_key }}"
+  delegate_to: "{{ item.hostname }}"
+  with_items: "{{ pgpool2_node_list }}"
+
+- name: Get known_hosts fingerprint for every PgPool-II node
+  shell: cat /etc/ssh/ssh_host_ecdsa_key.pub | awk '{ print $1 " " $2 }'
+  delegate_to: "{{ item.hostname }}"
+  with_items: "{{ pgpool2_node_list }}"
+  register: hosts_key
+
+- name: Add every PgPool-II fingerprint to known_hosts
+  known_hosts:
+    name: "{{ item.item.hostname }}"
+    key: "{{ item.item.hostname }} {{ item.stdout }}"
+  become: yes
+  become_user: postgres
+  with_items: "{{ hosts_key.results }}"
+
+- name: Copy 'postgres' public SSH key on every PostgreSQL backend server
+  authorized_key:
+    user: postgres
+    key: "{{ postgres_ssh_key.public_key }}"
+  delegate_to: "{{ item.hostname }}"
+  with_items: "{{ pgpool2_backends }}"
+
+- name: Get known_hosts fingerprint for every PostgreSQL backend server
+  shell: cat /etc/ssh/ssh_host_ecdsa_key.pub | awk '{ print $1 " " $2 }'
+  delegate_to: "{{ item.hostname }}"
+  with_items: "{{ pgpool2_backends }}"
+  register: hosts_key
+
+- name: Add every PostgreSQL backend server fingerprint to known_hosts
+  known_hosts:
+    name: "{{ item.item.hostname }}"
+    key: "{{ item.item.hostname }} {{ item.stdout }}"
+  become: yes
+  become_user: postgres
+  with_items: "{{ hosts_key.results }}"
+
+- name: Find the PostgreSQL primary node
+  block:
+    - name: Query PostgreSQL nodes to find out if they are primary or standby
+      postgresql_query:
+        query: SELECT pg_is_in_recovery();
+      become_user: postgres
+      delegate_to: "{{ item.hostname }}"
+      with_items: "{{ pgpool2_backends }}"
+      register: postgresql_primary
+
+    - debug:
+        msg: "{{ postgresql_primary }}"
+
+    - name: Set the PostgreSQL primary node
+      set_fact:
+        postgresql_primary_host: "{{ item.item.hostname }}"
+      with_items: "{{ postgresql_primary.results }}"
+      when: item.query_result[0]['pg_is_in_recovery'] is false
+
+    - name: Fail if PostgreSQL primary node is not found
+      fail:
+        msg: No primary node found, cannot continue. Exiting now!
+      when: postgresql_primary_host is undefined or postgresql_primary_host == "" or not postgresql_primary_host
+  run_once: true
+
+- name: Add users on PostgreSQL
+  block:
+    - name: Add Streaming Replication Check user on PostgreSQL
+      postgresql_user:
+        name: "{{ pgpool2_sr_check_user }}"
+        password: "{{ pgpool2_sr_check_password }}"
+        role_attr_flags: SUPERUSER
+
+    - name: Add Health Check user on PostgreSQL
+      postgresql_user:
+        name: "{{ pgpool2_health_check_user }}"
+        password: "{{ pgpool2_health_check_password }}"
+        role_attr_flags: SUPERUSER
+    
+    - name: Add Recovery user on PostgreSQL
+      postgresql_user:
+        name: "{{ pgpool2_recovery_user }}"
+        password: "{{ pgpool2_recovery_password }}"
+        role_attr_flags: SUPERUSER
+  delegate_to: "{{ postgresql_primary_host }}"
+  become_user: postgres
+  run_once: true
+
+- name: Configure Sudo for Virtual IP control commands
+  template:
+    src: pgpool_sudoers.j2
+    dest: /etc/sudoers.d/pgpool
+  when: pgpool2_delegate_ip != ""

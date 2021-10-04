@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+Cmnd_Alias IP_ADD = /usr/bin/sudo /sbin/ip addr add * dev * label *
+Cmnd_Alias IP_DEL = /usr/bin/sudo /sbin/ip addr del * dev *
+Cmnd_Alias ARPING = /usr/bin/sudo /usr/sbin/arping -U * -w 1 -I *
+
+{{ pgpool2_user }} ALL = (root) NOPASSWD: IP_ADD
+{{ pgpool2_user }} ALL = (root) NOPASSWD: IP_DEL
+{{ pgpool2_user }} ALL = (root) NOPASSWD: ARPING

@@ -1,3 +1,5 @@
+# {{ ansible_managed }}
+
 # ----------------------------
 # pgPool-II configuration file
 # ----------------------------
@@ -73,14 +75,16 @@ serialize_accept = {{ pgpool2_serialize_accept | default('off') }}
                                    # (change requires restart)
 
 # - Backend Connection Settings -
-{% for id, backend in pgpool2_backends %}
 
+{% for backend in pgpool2_backends %}
+{% set id = loop.index0 %}
 backend_hostname{{ id }} = '{{ backend.hostname }}'
 backend_port{{ id }} = {{ backend.port | default('5432') }}
 backend_weight{{ id }} = {{ backend.weight | default('1') }}
-backend_data_directory{{ id }} = '{{ backend.data_directory }}
+backend_data_directory{{ id }} = '{{ backend.data_directory | default('/var/lib/postgresql/' ~ pgpool2_postgresql_version ~ '/main') }}'
 backend_flag{{ id }} = '{{ backend.flag | default('ALLOW_TO_FAILOVER') }}'
 backend_application_name{{ id }} = '{{ backend.application_name | default(backend.hostname) }}'
+
 {% endfor %}
 
 # - Authentication -
@@ -159,9 +163,9 @@ ssl_dh_params_file = '{{ pgpool2_ssl_dh_params_file | default('') }}'
                                    # Name of the file containing Diffie-Hellman parameters used
                                    # for so-called ephemeral DH family of SSL cipher.
 {% if pgpool2_ssl_passphrase_command is defined %}
-#ssl_passphrase_command=''
+ssl_passphrase_command='{{ pgpool2_ssl_passphrase_command | default('') }}'
 {% else %}
-ssl_passphrase_command='{{ pgpool2_ssl_passphrase_command }}'
+#ssl_passphrase_command=''
 {% endif %}
                                    # Sets an external command to be invoked when a passphrase
                                    # for decrypting an SSL file needs to be obtained
@@ -356,7 +360,6 @@ pid_file_name = '{{ pgpool2_pid_file_name | default('/var/run/pgpool/pgpool.pid'
 logdir = '{{ pgpool2_logdir | default('/tmp') }}'
                                    # Directory of pgPool status file
                                    # (change requires restart)
-
 
 #------------------------------------------------------------------------------
 # CONNECTION POOLING
@@ -583,15 +586,12 @@ connect_timeout = {{ pgpool2_connect_timeout | default('') }}
 #health_check_retry_delay0 = 1
 #connect_timeout0 = 10000
 
+
 #------------------------------------------------------------------------------
 # FAILOVER AND FAILBACK
 #------------------------------------------------------------------------------
 
-{% if pgpool2_failover_enabled %}
-failover_command = '{{ pgpool2_failover_command }}'
-{% else %}
-failover_command = ''
-{% endif %}
+failover_command = '{{ pgpool2_failover_command | default('') }}'
                                    # Executes this command at failover
                                    # Special values:
                                    #   %d = failed node id
@@ -608,11 +608,7 @@ failover_command = ''
                                    #   %S = old primary node port number
                                    #   %% = '%' character
 
-{% if pgpool2_failback_enabled %}
-failback_command = '{{ pgpool2_failback_command }}'
-{% else %}
-failback_command = ''
-{% endif %}
+failback_command = '{{ pgpool2_failback_command | default('') }}'
                                    # Executes this command at failback.
                                    # Special values:
                                    #   %d = failed node id
@@ -714,11 +710,12 @@ ping_path = '{{ pgpool2_ping_path | default('/usr/bin') }}'
                                     # Port number for pgpool
                                     # (change requires restart)
 
-{% for id, node in pgpool2_node_list %}
-
+{% for node in pgpool2_node_list %}
+{% set id = loop.index0 %}
 hostname{{ id }} = '{{ node.hostname }}'
 wd_port{{ id }} = {{ node.wd_port | default('9000') }}
 pgpool_port{{ id }} = {{ node.pgpool_port | default('9999') }}
+
 {% endfor %}
 
 wd_priority = {{ pgpool2_wd_priority | default('1') }}
@@ -841,11 +838,12 @@ wd_interval = {{ pgpool2_wd_interval | default('10') }}
                                     # and pgpool has root privilege.
                                     # (change requires restart)
 
-{% for id, node in pgpool2_node_list %}
-
+{% for node in pgpool2_node_list %}
+{% set id = loop.index0 %}
 heartbeat_hostname{{ id }} = '{{ node.hostname }}'
 heartbeat_port{{ id }} = {{ node.heartbeat_port | default('9694') }}
 heartbeat_device{{ id }} = {{ node.heartbeat_device | default('') }}
+
 {% endfor %}
 
 wd_heartbeat_keepalive = {{ pgpool2_wd_heartbeat_keepalive | default('2') }}
@@ -919,6 +917,7 @@ enable_shared_relcache = {{ pgpool2_enable_shared_relcache | default('on') }}
 relcache_query_target = {{ pgpool2_relcache_query_target | default('primary') }}
                                    # Target node to send relcache queries. Default is primary node.
                                    # If load_balance_node is specified, queries will be sent to load balance node.
+
 #------------------------------------------------------------------------------
 # IN MEMORY QUERY MEMORY CACHE
 #------------------------------------------------------------------------------

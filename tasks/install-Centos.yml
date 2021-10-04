@@ -15,3 +15,8 @@
   yum:
     name: "{{ pgpool2_yum_package_name }}"
     state: present
+
+- name: Install the PostgreSQL Client
+  yum:
+    name: postgresql
+    state: present

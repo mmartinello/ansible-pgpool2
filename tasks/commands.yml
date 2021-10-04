@@ -1,0 +1,72 @@
+---
+- name: Copy the follow primary command
+  copy:
+    src: "{{ pgpool2_follow_primary_command_src_path }}"
+    dest: "{{ pgpool2_follow_primary_command_dst_path }}"
+    owner: postgres
+    group: postgres
+    mode: 0700
+  when: pgpool2_follow_primary_command_src_path is defined and pgpool2_follow_primary_command_src_path != '' and pgpool2_follow_primary_command_dst_path is defined and pgpool2_follow_primary_command_dst_path != ''
+
+- name: Copy the failover command
+  copy:
+    src: "{{ pgpool2_failover_command_src_path }}"
+    dest: "{{ pgpool2_failover_command_dst_path }}"
+    owner: postgres
+    group: postgres
+    mode: 0700
+  when: pgpool2_failover_command_src_path is defined and pgpool2_failover_command_src_path != '' and pgpool2_failover_command_dst_path is defined and pgpool2_failover_command_dst_path != '' 
+
+- name: Copy the failback command
+  copy:
+    src: "{{ pgpool2_failback_command_src_path }}"
+    dest: "{{ pgpool2_failback_command_dst_path }}"
+    owner: postgres
+    group: postgres
+    mode: 0700
+  when: pgpool2_failback_command_src_path is defined and pgpool2_failback_command_src_path != '' and pgpool2_failback_command_dst_path is defined and pgpool2_failback_command_dst_path != ''
+
+- name: Copy the recovery 1st stage command
+  copy:
+    src: "{{ pgpool2_recovery_1st_stage_command_src_path }}"
+    dest: "{{ pgpool2_recovery_1st_stage_command_dst_path }}"
+    owner: postgres
+    group: postgres
+    mode: 0700
+  when: pgpool2_recovery_1st_stage_command_src_path is defined and pgpool2_recovery_1st_stage_command_src_path != '' and pgpool2_recovery_1st_stage_command_dst_path is defined and pgpool2_recovery_1st_stage_command_dst_path != ''
+
+- name: Copy the recovery 2st stage command
+  copy:
+    src: "{{ pgpool2_recovery_2nd_stage_command_src_path }}"
+    dest: "{{ pgpool2_recovery_2nd_stage_command_dst_path }}"
+    owner: postgres
+    group: postgres
+    mode: 0700
+  when: pgpool2_recovery_2nd_stage_command_src_path is defined and pgpool2_recovery_2nd_stage_command_src_path != '' and pgpool2_recovery_2nd_stage_command_dst_path is defined and pgpool2_recovery_2nd_stage_command_dst_path != ''
+
+- name: Copy the WD escalation command
+  copy:
+    src: "{{ pgpool2_wd_escalation_command_src_path }}"
+    dest: "{{ pgpool2_wd_escalation_command_dst_path }}"
+    owner: postgres
+    group: postgres
+    mode: 0700
+  when: pgpool2_wd_escalation_command_src_path is defined and pgpool2_wd_escalation_command_src_path != '' and pgpool2_wd_escalation_command_dst_path is defined and pgpool2_wd_escalation_command_dst_path != ''
+
+- name: Copy the WD DE escalation command
+  copy:
+    src: "{{ pgpool2_wd_de_escalation_command_src_path }}"
+    dest: "{{ pgpool2_wd_de_escalation_command_dst_path }}"
+    owner: postgres
+    group: postgres
+    mode: 0700
+  when: pgpool2_wd_de_escalation_command_src_path is defined and pgpool2_wd_de_escalation_command_src_path != '' and pgpool2_wd_de_escalation_command_dst_path is defined and pgpool2_wd_de_escalation_command_dst_path != ''
+
+- name: Copy the SSL passprase command command
+  copy:
+    src: "{{ pgpool2_ssl_passphrase_command_src_path }}"
+    dest: "{{ pgpool2_ssl_passphrase_command_dst_path }}"
+    owner: postgres
+    group: postgres
+    mode: 0700
+  when: pgpool2_ssl_passphrase_command_src_path is defined and pgpool2_ssl_passphrase_command_src_path != '' and pgpool2_ssl_passphrase_command_dst_path is defined and pgpool2_ssl_passphrase_command_dst_path != ''
