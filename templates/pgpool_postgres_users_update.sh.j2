@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Replicates users from PostgreSQL to Pgpool
+
+# TODO:
+#   - support multiple backends (now I connect only to the first)
+#   - support backend port other than 5432
+
+# Configuration
+passwd_file=/etc/pgpool-II/pool_passwd
+temp_file=/tmp/users.tmp
+postgresql_host={{ pgpool2_backends.hostname }}
+postgresql_hosts=({% for backend in pgpool2_backends %}"{{ backend.hostname }}:{{ backend.port }}"{{ " " if not loop.last else "" }}{% endfor %})
+postgresql_user=postgres
+pgpool_nodes=({% for node in pgpool2_node_list %}"{{ node.hostname }}"{{ " " if not loop.last else "" }}{% endfor %})
+
+# Fetch data from Postgres and save them to temporary file
+for host in ${postgresql_hosts[@]}; do
+    psql -c "select rolname,rolpassword from pg_authid;" "host=$postgresql_host user=$postgresql_user dbname=postgres" > $temp_file
+done
+
+# then go through the file to remove/add the entry in pool_passwd file
+cat $temp_file | awk 'BEGIN {FS="|"}{print $1" "$2}' | grep md5 | while read f1 f2
+do
+ echo "setting passwd of $f1 in $passwd_file"
+ # delete the line if exits
+ sed -i -e "/^${f1}:/d" $passwd_file
+ echo $f1:$f2 >> $passwd_file
+done
+
+# Copy files to other nodes and reload Pgpool2
+for node in ${pgpool_nodes[@]}; do
+    echo "Copying passwd file to ${node} ..."
+    scp -q $passwd_file ${node}:$passwd_file
+    echo "Reloading Pgpool2 on ${node} ..."
+    ssh -q ${node} systemctl reload pgpool
+done

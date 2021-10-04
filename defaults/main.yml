@@ -252,3 +252,10 @@ pgpool2_etc_dir: /etc/pgpool-II
 pgpool2_node_id: 0
 pgpool2_pool_hba_entries: []
 pgpool2_pool_passwd_entries: []
+
+# PostgreSQL user update command
+pgpool2_postgres_users_update_enable: true
+pgpool2_postgres_users_update_cron_minute: 0
+pgpool2_postgres_users_update_cron_hour: 0
+pgpool2_postgres_users_update_cron_day: *
+pgpool2_postgres_users_update_cron_month: *

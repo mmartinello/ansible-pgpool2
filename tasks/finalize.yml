@@ -118,3 +118,24 @@
     src: pgpool_sudoers.j2
     dest: /etc/sudoers.d/pgpool
   when: pgpool2_delegate_ip != ""
+
+- name: Copy the SSL passprase command command
+  template:
+    src: pgpool_postgres_users_update.sh
+    dest: /usr/local/bin/pgpool_postgres_users_update.sh
+    owner: postgres
+    group: postgres
+    mode: 0700
+  when: pgpool2_postgres_users_update_enable
+
+- name: Configure PostgreSQL users sync cron
+  cron:
+    name: Sync Pgpool2 users from PostgreSQL backends
+    user: postgres
+    minute: "{{ pgpool2_postgres_users_update_cron_minute }}"
+    hour: "{{ pgpool2_postgres_users_update_cron_hour }}"
+    day: "{{ pgpool2_postgres_users_update_cron_day }}"
+    month: "{{ pgpool2_postgres_users_update_cron_month }}"
+    job: /usr/local/bin/pgpool_postgres_users_update.sh
+    state: present
+  when: pgpool2_postgres_users_update_enable
