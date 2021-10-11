@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Replicates users from PostgreSQL to Pgpool
+
+# Configuration
+pgpool_passwd_file=/etc/pgpool-II/{{ pgpool2_pool_passwd | default('pool_passwd') }}
+postgresql_hosts=({% for backend in pgpool2_backends %}"{{ backend.hostname }}:{{ backend.port | default('5432') }}"{{ " " if not loop.last else "" }}{% endfor %})
+postgresql_user={{ pgpool2_sr_check_user }}
+pgpool_nodes=({% for node in pgpool2_node_list %}"{{ node.hostname }}"{{ " " if not loop.last else "" }}{% endfor %})
+
+# Fetch data from Postgres and save them to temporary file
+psql_temp_file=`mktemp`
+for host in ${postgresql_hosts[@]}; do
+    readarray -td : host_part < <(printf '%s' "$host")
+    hostname=${host_part[0]}
+    port=${host_part[1]}
+
+    echo "Connecting to PostgreSQL server $hostname:$port to sync users ..."
+
+    psql -c "select rolname,rolpassword from pg_authid;" "host=$hostname port=$port user=$postgresql_user dbname=postgres" -w > $psql_temp_file
+    exit_status=$?
+
+    if [[ $exit_status = 0 ]]
+    then
+        echo "Users succesfully taken, skip next hosts"
+        break
+    else
+        echo "Error connecting to host $hostname:$port, trying next one ..."
+    fi
+done
+
+# Check if users are taken from PostgreSQL
+grep -q "md5" $psql_temp_file
+exit_status=$?
+
+if [[ $exit_status -ne 0 ]]
+then
+    echo "No passwords taken from PostgreSQL into $psql_temp_file, exiting now!"
+    rm $psql_temp_file
+    exit 1
+fi
+
+# then go through the file to remove/add the entry in pool_passwd file
+passwd_temp_file=`mktemp`
+timestamp=`date`
+echo "# PgPool-II users file automatically created by pgpool_postgres_users_sync.sh at '$timestamp'" > $passwd_temp_file
+cat $psql_temp_file | awk 'BEGIN {FS="|"}{print $1" "$2}' | grep md5 | while read f1 f2
+do
+    echo "setting passwd of $f1 in $passwd_temp_file"
+    echo $f1:$f2 >> $passwd_temp_file
+done
+
+# Move passwd temp file to PgPool-II passwd file (check if at least one password is inserted into temp file)
+grep -q ":md5" $passwd_temp_file
+exit_status=$?
+
+if [[ $exit_status = 0 ]]
+then
+    cp -f $passwd_temp_file $pgpool_passwd_file
+else
+    echo "No passwords into $passwd_temp_file, exiting now!"
+    exit 1
+fi
+
+# Reload PgPool
+echo "Reloading Pgpool ..."
+sudo systemctl reload pgpool
+
+# Remove temp files
+rm $psql_temp_file
+rm $passwd_temp_file

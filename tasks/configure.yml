@@ -3,23 +3,29 @@
   template:
     src: pcp.conf.j2
     dest: "{{ pgpool2_etc_dir }}/pcp.conf"
+  notify: Restart Pgpool-II
 
 - name: Configure pgpool_node_id configuration file
   template:
     src: pgpool_node_id.j2
     dest: "{{ pgpool2_etc_dir }}/pgpool_node_id"
+  notify: Restart Pgpool-II
 
 - name: Configure pool_hba configuration file
   template:
     src: pool_hba.conf.j2
     dest: "{{ pgpool2_etc_dir }}/pool_hba.conf"
+  notify: Restart Pgpool-II
 
 - name: Configure pool_passwd configuration file
   template:
     src: pool_passwd.j2
-    dest: "{{ pgpool2_etc_dir }}/pool_passwd"
+    dest: "{{ pgpool2_etc_dir }}/{{ pgpool2_pool_passwd }}"
+  notify: Restart Pgpool-II
+  when: pgpool2_pool_passwd_entries 
 
 - name: Configure Pgpool-II main configuration file
   template:
     src: pgpool.conf.j2
     dest: "{{ pgpool2_etc_dir }}/pgpool.conf"
+  notify: Restart Pgpool-II

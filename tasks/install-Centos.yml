@@ -5,6 +5,13 @@
 #    pkg: "{{ pgpool2_release_rpm_url }}"
 #    state: present
 
+- name: Disable FirewallD
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  when: pgpool2_firewalld_disable
+
 # FIXME: fallback for previous fixme
 - name: Install Pgpool-II Repository
   command: "yum -y install {{ pgpool2_release_rpm_url }}"
@@ -15,8 +22,15 @@
   yum:
     name: "{{ pgpool2_yum_package_name }}"
     state: present
+  notify: Restart Pgpool-II
 
 - name: Install the PostgreSQL Client
   yum:
     name: postgresql
     state: present
+
+- name: Enable Pgpool-II
+  ansible.builtin.service:
+    name: pgpool
+    enabled: true
+  when: pgpool2_service_enable

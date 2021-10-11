@@ -3,3 +3,13 @@
   service:
     name: pgpool
     state: restarted
+
+- name: Restart Rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+
+- name: Execute PostgreSQL users sync command
+  command: /usr/local/bin/pgpool_postgres_users_sync.sh
+  become_user: postgres
+  when: pgpool2_postgres_users_sync_enable

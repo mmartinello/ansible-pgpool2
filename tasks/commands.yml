@@ -64,9 +64,13 @@
 
 - name: Copy the SSL passprase command command
   copy:
-    src: "{{ pgpool2_ssl_passphrase_command_src_path }}"
-    dest: "{{ pgpool2_ssl_passphrase_command_dst_path }}"
+    src: "{{ pgpool2_ssl_passphrase_command_src_path | default('') }}"
+    dest: "{{ pgpool2_ssl_passphrase_command_dst_path | default('') }}"
     owner: postgres
     group: postgres
     mode: 0700
-  when: pgpool2_ssl_passphrase_command_src_path is defined and pgpool2_ssl_passphrase_command_src_path != '' and pgpool2_ssl_passphrase_command_dst_path is defined and pgpool2_ssl_passphrase_command_dst_path != ''
+  when:
+    - pgpool2_ssl_passphrase_command_src_path is defined
+    - pgpool2_ssl_passphrase_command_src_path != ''
+    - pgpool2_ssl_passphrase_command_dst_path is defined
+    - pgpool2_ssl_passphrase_command_dst_path != ''

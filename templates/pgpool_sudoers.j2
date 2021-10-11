@@ -7,3 +7,4 @@ Cmnd_Alias ARPING = /usr/bin/sudo /usr/sbin/arping -U * -w 1 -I *
 {{ pgpool2_user }} ALL = (root) NOPASSWD: IP_ADD
 {{ pgpool2_user }} ALL = (root) NOPASSWD: IP_DEL
 {{ pgpool2_user }} ALL = (root) NOPASSWD: ARPING
+{{ pgpool2_user }} ALL= NOPASSWD: /bin/systemctl reload pgpool

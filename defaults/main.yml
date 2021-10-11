@@ -86,8 +86,8 @@ pgpool2_ssl_ciphers: HIGH:MEDIUM:+3DES:!aNULL
 ssl_prefer_server_ciphers: 'off'
 pgpool2_ssl_ecdh_curve: prime256v1
 pgpool2_ssl_dh_params_file:
-pgpool2_ssl_passphrase_command_src_path:
-pgpool2_ssl_passphrase_command_dst_path:
+pgpool2_ssl_passphrase_command_src_path: ''
+pgpool2_ssl_passphrase_command_dst_path: ''
 pgpool2_ssl_passphrase_command:
 
 # Pools
@@ -121,8 +121,14 @@ pgpool2_syslog_ident: pgpool
 #pgpool2_log_rotation_age: 1d
 #pgpool2_log_rotation_size: 10MB
 
-# File Locations
+# Syslog file log (if pgpool2_log_destination=syslog)
+pgpool2_syslog_log_file_path: /var/log/pgpool/pgpool.log
+pgpool2_rsyslog_enabled: true
+pgpool2_rsyslog_start: true
 
+# File Locations
+pgpool2_pid_file_name: /var/run/pgpool/pgpool.pid
+pgpool2_logdir: /tmp
 
 # Connection Pooling
 pgpool2_connection_cache: on
@@ -150,21 +156,21 @@ pgpool2_statement_level_load_balance: 'off'
 
 # Native Replication Mode
 pgpool2_sr_check_period: 0
-pgpool2_sr_check_user: 'nobody'
+pgpool2_sr_check_user: 'pgpool'
 pgpool2_sr_check_password: ''
 pgpool2_sr_check_database: postgres
 pgpool2_delay_threshold: 0
 pgpool2_follow_primary_command_src_path: follow_primary.sh
 pgpool2_follow_primary_command_dst_path: /usr/local/bin/pgpool-follow-primary.sh
-pgpool2_failover_command: '{{ pgpool2_follow_primary_command_dst_path }} %d %h %P %m %H %R'
+pgpool2_follow_primary_command: '{{ pgpool2_follow_primary_command_dst_path }} %d %h %P %m %H %R'
 
 # Health Check Global Parameters
 pgpool2_health_check_period: 0
 pgpool2_health_check_timeout: 10
-health_check_user: nobody
+pgpool2_health_check_user: nobody
 pgpool2_health_check_password: ''
 pgpool2_health_check_database: ''
-health_check_max_retries: 0
+pgpool2_health_check_max_retries: 0
 pgpool2_health_check_retry_delay: 1
 pgpool2_connect_timeout: 10000
 
@@ -247,15 +253,19 @@ pgpool2_memqcache_oiddir: /var/log/pgpool/oiddir
 pgpool2_cache_safe_memqcache_table_list: ''
 pgpool2_cache_unsafe_memqcache_table_list: ''
 
+# PostgreSQL user sync command
+pgpool2_postgres_users_sync_enable: true
+pgpool2_postgres_users_sync_cron_minute: '0'
+pgpool2_postgres_users_sync_cron_hour: '0'
+pgpool2_postgres_users_sync_cron_day: '*'
+pgpool2_postgres_users_sync_cron_month: '*'
+
+# Others
+pgpool2_firewalld_disable: true
+
 # Builtin variables
+pgpool2_service_enable: true
 pgpool2_etc_dir: /etc/pgpool-II
 pgpool2_node_id: 0
 pgpool2_pool_hba_entries: []
 pgpool2_pool_passwd_entries: []
-
-# PostgreSQL user update command
-pgpool2_postgres_users_update_enable: true
-pgpool2_postgres_users_update_cron_minute: 0
-pgpool2_postgres_users_update_cron_hour: 0
-pgpool2_postgres_users_update_cron_day: *
-pgpool2_postgres_users_update_cron_month: *
