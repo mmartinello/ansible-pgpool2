@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+
+{% for backend in pgpool2_backends %}
+{{ backend.hostname }}:{{ backend.port | default('5432') }}:postgres:{{ pgpool2_sr_check_user }}:{{ pgpool2_sr_check_password }}
+{% endfor %}
