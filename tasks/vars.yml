@@ -1,3 +1,0 @@
----
-- include_tasks: vars-Centos.yml
-  when: ansible_os_family in ['CentOS', 'RedHat']

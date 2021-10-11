@@ -5,25 +5,37 @@
     msg: "Distro '{{ ansible_os_family }}' not supported, exiting now!"
   when: ansible_os_family not in ['CentOS', 'RedHat']
 
-# Setup variables
-- import_tasks: vars.yml
-
+# Load variables
+- name: Load variables
+  include_vars: "{{ ansible_distribution }}.yml"
+  
 # Install Pgpool-II
-- import_tasks: install.yml
+- name: Install PgPool-II
+  import_tasks: install.yml
   tags:
     - install
 
 # Configure Pgpool-II
-- import_tasks: configure.yml
+- name: Configure PgPool-II
+  import_tasks: configure.yml
   tags:
     - configure
 
 # Copy command files
-- import_tasks: commands.yml
+- name: Copy command files
+  import_tasks: commands.yml
   tags:
     - commands
 
-# Finalize (SSH keys, sudoers, etc.)
-- import_tasks: finalize.yml
+# Setup logs
+- name: Setup logs
+  import_tasks: log.yml
+  tags:
+    - log
+  when: pgpool2_log_destination == 'syslog'
+
+# Finalize installation (SSH keys, sudoers, etc.)
+- name: Finalize installation (SSH keys, sudoers, etc.)
+  import_tasks: finalize.yml
   tags:
     - finalize

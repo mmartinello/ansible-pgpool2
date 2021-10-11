@@ -1,0 +1,35 @@
+---
+- name: Install Rsyslog
+  yum:
+    name: rsyslog
+    state: present
+  notify: Restart Rsyslog
+
+- name: Create log directory
+  file:
+    path: "{{ pgpool2_syslog_log_file_path | dirname }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: 0755
+    recurse: yes
+
+- name: Touch the log file if not exists
+  file:
+    path: "{{ pgpool2_syslog_log_file_path }}"
+    state: touch
+    owner: postgres
+    group: postgres
+    mode: 0644
+
+- name: Configure Rsyslog
+  template:
+    src: rsyslog-pgpool.conf.j2
+    dest: /etc/rsyslog.d/pgpool.conf
+  notify: Restart Rsyslog
+
+- name: Enable Rsyslog
+  ansible.builtin.service:
+    name: rsyslog
+    enabled: "{{ pgpool2_rsyslog_enabled }}"
+  when: pgpool2_rsyslog_enabled

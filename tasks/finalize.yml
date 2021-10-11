@@ -1,15 +1,31 @@
 ---
 - name: Create 'postgres' user home directory
   file:
-    path: /var/lib/pgsql
+    path: "{{ pgpool2_postgres_home_dir_path }}"
     state: directory
     mode: 0700
     owner: postgres
     group: postgres
 
+- name: Configure .pcppass file
+  template:
+    src: pcppass.j2
+    dest: "{{ pgpool2_postgres_home_dir_path }}/.pcppass"
+    owner: postgres
+    group: postgres
+    mode: 0600
+
+- name: Configure .pgpass file
+  template:
+    src: pgpass.j2
+    dest: "{{ pgpool2_postgres_home_dir_path }}/.pgpass"
+    owner: postgres
+    group: postgres
+    mode: 0600
+
 - name: Create .ssh directory for 'postgres' user
   file:
-    path: /var/lib/pgsql/.ssh
+    path: "{{ pgpool2_postgres_home_dir_path }}/.ssh"
     state: directory
     mode: 0700
     owner: postgres
@@ -17,7 +33,7 @@
 
 - name: Create SSH keys for 'postgres' user
   openssh_keypair:
-    path: /var/lib/pgsql/.ssh/id_rsa
+    path: "{{ pgpool2_postgres_home_dir_path }}/.ssh/id_rsa"
     state: present
     owner: postgres
     group: postgres
@@ -67,16 +83,13 @@
 
 - name: Find the PostgreSQL primary node
   block:
-    - name: Query PostgreSQL nodes to find out if they are primary or standby
+    - name: Query PostgreSQL nodes to find primary
       postgresql_query:
         query: SELECT pg_is_in_recovery();
       become_user: postgres
       delegate_to: "{{ item.hostname }}"
       with_items: "{{ pgpool2_backends }}"
       register: postgresql_primary
-
-    - debug:
-        msg: "{{ postgresql_primary }}"
 
     - name: Set the PostgreSQL primary node
       set_fact:
@@ -113,29 +126,31 @@
   become_user: postgres
   run_once: true
 
-- name: Configure Sudo for Virtual IP control commands
+- name: Configure Sudo
   template:
     src: pgpool_sudoers.j2
     dest: /etc/sudoers.d/pgpool
   when: pgpool2_delegate_ip != ""
 
-- name: Copy the SSL passprase command command
+- name: Copy the PostgreSQL Users Sync command
   template:
-    src: pgpool_postgres_users_update.sh
-    dest: /usr/local/bin/pgpool_postgres_users_update.sh
+    src: pgpool_postgres_users_sync.sh.j2
+    dest: /usr/local/bin/pgpool_postgres_users_sync.sh
     owner: postgres
     group: postgres
     mode: 0700
-  when: pgpool2_postgres_users_update_enable
+  when: pgpool2_postgres_users_sync_enable
+  notify: Execute PostgreSQL users sync command
 
 - name: Configure PostgreSQL users sync cron
   cron:
     name: Sync Pgpool2 users from PostgreSQL backends
     user: postgres
-    minute: "{{ pgpool2_postgres_users_update_cron_minute }}"
-    hour: "{{ pgpool2_postgres_users_update_cron_hour }}"
-    day: "{{ pgpool2_postgres_users_update_cron_day }}"
-    month: "{{ pgpool2_postgres_users_update_cron_month }}"
-    job: /usr/local/bin/pgpool_postgres_users_update.sh
+    minute: "{{ pgpool2_postgres_users_sync_cron_minute }}"
+    hour: "{{ pgpool2_postgres_users_sync_cron_hour }}"
+    day: "{{ pgpool2_postgres_users_sync_cron_day }}"
+    month: "{{ pgpool2_postgres_users_sync_cron_month }}"
+    job: /usr/local/bin/pgpool_postgres_users_sync.sh
     state: present
-  when: pgpool2_postgres_users_update_enable
+  when: pgpool2_postgres_users_sync_enable
+  notify: Execute PostgreSQL users sync command

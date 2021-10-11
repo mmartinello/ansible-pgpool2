@@ -1,0 +1,3 @@
+---
+pgpool2_etc_dir: /etc/pgpool-II
+pgpool2_postgres_home_dir_path: /var/lib/pgsql

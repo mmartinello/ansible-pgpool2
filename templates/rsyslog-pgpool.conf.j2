@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+
+if $programname == 'pgpool' then {
+        {{ pgpool2_syslog_log_file_path }}
+        ~
+}
