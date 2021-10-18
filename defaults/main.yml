@@ -156,7 +156,7 @@ pgpool2_sr_check_database: postgres
 pgpool2_delay_threshold: 0
 pgpool2_follow_primary_command_src_path: follow_primary.sh.j2
 pgpool2_follow_primary_command_dst_path: /usr/local/bin/pgpool-follow-primary.sh
-pgpool2_follow_primary_command: '{{ pgpool2_follow_primary_command_dst_path }} %d %h %P %m %H %R'
+pgpool2_follow_primary_command: '{{ pgpool2_follow_primary_command_dst_path }} %d %h %P %N %m %H %R'
 
 # Health Check Global Parameters
 pgpool2_health_check_period: 0
@@ -177,7 +177,7 @@ pgpool2_failover_command_dst_path: /usr/local/bin/pgpool-failover.sh
 pgpool2_failover_command: '{{ pgpool2_failover_command_dst_path }} %d %h %P %m %H %R'
 pgpool2_failback_command_src_path: ''
 pgpool2_failback_command_dst_path: 'echo failback'
-pgpool2_failback_command: '{{ pgpool2_failback_command_dst_path }} %d %h %p %D %m %H %M %P'
+pgpool2_failback_command: '{{ pgpool2_failback_command_dst_path }} %d %h %P %N %m %H %R'
 pgpool2_failover_on_backend_error: on
 pgpool2_detach_false_primary: 'off'
 pgpool2_search_primary_node_timeout: 5min
@@ -263,3 +263,8 @@ pgpool2_etc_dir: /etc/pgpool-II
 pgpool2_node_id: 0
 pgpool2_pool_hba_entries: []
 pgpool2_pool_passwd_entries: []
+
+# Logrotate configuration
+pgpool_logrotate_rotate: 3
+pgpool_logrotate_frequency: daily
+pgpool_logrotate_maxsize: 200M
