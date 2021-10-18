@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+{{ pgpool2_syslog_log_file_path }}
+{
+        rotate {{ pgpool_logrotate_rotate }}
+        {{ pgpool_logrotate_frequency | default('daily') }}
+        missingok
+        notifempty
+        delaycompress
+        compress
+        maxsize {{ pgpool_logrotate_maxsize }}
+        copytruncate
+}
