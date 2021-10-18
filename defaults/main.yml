@@ -31,12 +31,6 @@ pgpool2_node_list:
     heartbeat_port: 9694
     heartbeat_device: ''
 
-# Failover and failback configuration
-pgpool2_failover_enabled: false
-pgpool2_failover_command_source: pgpool-failover.sh
-pgpool2_failback_enabled: false
-pgpool2_failback_command_source: pgpool-failback.sh
-
 # Watchdog
 pgpool2_use_watchdog: 'off'
 pgpool2_delegate_ip: ''
@@ -160,7 +154,7 @@ pgpool2_sr_check_user: 'pgpool'
 pgpool2_sr_check_password: ''
 pgpool2_sr_check_database: postgres
 pgpool2_delay_threshold: 0
-pgpool2_follow_primary_command_src_path: follow_primary.sh
+pgpool2_follow_primary_command_src_path: follow_primary.sh.j2
 pgpool2_follow_primary_command_dst_path: /usr/local/bin/pgpool-follow-primary.sh
 pgpool2_follow_primary_command: '{{ pgpool2_follow_primary_command_dst_path }} %d %h %P %m %H %R'
 
@@ -178,7 +172,7 @@ pgpool2_connect_timeout: 10000
 
 
 # Failover and Failback
-pgpool2_failover_command_src_path: failover.sh
+pgpool2_failover_command_src_path: failover.sh.j2
 pgpool2_failover_command_dst_path: /usr/local/bin/pgpool-failover.sh
 pgpool2_failover_command: '{{ pgpool2_failover_command_dst_path }} %d %h %P %m %H %R'
 pgpool2_failback_command_src_path: ''
