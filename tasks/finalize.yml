@@ -140,7 +140,6 @@
     group: postgres
     mode: 0700
   when: pgpool2_postgres_users_sync_enable
-  notify: Execute PostgreSQL users sync command
 
 - name: Configure PostgreSQL users sync cron
   cron:
@@ -153,4 +152,7 @@
     job: /usr/local/bin/pgpool_postgres_users_sync.sh
     state: present
   when: pgpool2_postgres_users_sync_enable
-  notify: Execute PostgreSQL users sync command
+
+-  name: Execute PostgreSQL users sync cron
+   command: /bin/true
+   notify: Execute PostgreSQL users sync command
