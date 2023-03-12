@@ -1,5 +1,5 @@
 ---
-# Only CentOS supported
+# Only RedHat supported
 
-- include_tasks: install-Centos.yml
-  when: ansible_os_family in ['CentOS', 'RedHat']
+- include_tasks: install-RedHat.yml
+  when: ansible_os_family == "RedHat"

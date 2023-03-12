@@ -15,8 +15,6 @@
 # FIXME: fallback for previous fixme
 - name: Install Pgpool-II Repository
   command: "yum -y install {{ pgpool2_release_rpm_url }}"
-  args:
-    warn: false
 
 - name: Install Pgpool-II
   yum:

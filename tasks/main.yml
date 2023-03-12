@@ -6,9 +6,19 @@
   when: ansible_os_family not in ['CentOS', 'RedHat']
 
 # Load variables
-- name: Load variables
-  include_vars: "{{ ansible_distribution }}.yml"
-  
+- name: Load Distribution specific variables
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_system }}-{{ ansible_os_family }}-{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+        - "{{ ansible_system }}-{{ ansible_os_family }}-{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_system }}-{{ ansible_os_family }}-{{ ansible_distribution }}.yml"
+        - "{{ ansible_system }}-{{ ansible_os_family }}.yml"
+        - "default.yml"
+      paths:
+        - vars
+
 # Install Pgpool-II
 - name: Install PgPool-II
   import_tasks: install.yml
